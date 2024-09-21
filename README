@@ -6,7 +6,11 @@ Autogguf is a script designed to automate downloading/uploading gguf quants to h
 # Create python virtual env:
 python -m venv .env
 # Activate it
-
+source .env/bin/activate
+# Install huggingface-cli
+...
+# Install transformers + numpy
+...
 
 # Convert your Hugging Face model to GGUF format for local deployment
 # Usage:
