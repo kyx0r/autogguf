@@ -2,14 +2,14 @@
 #Inspired from mlabonne autogguf work with modifications
 
 cat << "EOF"
- $$$$$$\  $$\   $$\ $$$$$$$$\  $$$$$$\           $$$$$$\   $$$$$$\  $$\   $$\ $$$$$$$$\ 
+ $$$$$$\  $$\   $$\ $$$$$$$$\  $$$$$$\           $$$$$$\   $$$$$$\  $$\   $$\ $$$$$$$$\
 $$  __$$\ $$ |  $$ |\__$$  __|$$  __$$\         $$  __$$\ $$  __$$\ $$ |  $$ |$$  _____|
-$$ /  $$ |$$ |  $$ |   $$ |   $$ /  $$ |        $$ /  \__|$$ /  \__|$$ |  $$ |$$ |      
-$$$$$$$$ |$$ |  $$ |   $$ |   $$ |  $$ |$$$$$$\ $$ |$$$$\ $$ |$$$$\ $$ |  $$ |$$$$$\    
-$$  __$$ |$$ |  $$ |   $$ |   $$ |  $$ |\______|$$ |\_$$ |$$ |\_$$ |$$ |  $$ |$$  __|   
-$$ |  $$ |$$ |  $$ |   $$ |   $$ |  $$ |        $$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |      
-$$ |  $$ |\$$$$$$  |   $$ |    $$$$$$  |        \$$$$$$  |\$$$$$$  |\$$$$$$  |$$ |      
-\__|  \__| \______/    \__|    \______/          \______/  \______/  \______/ \__|      
+$$ /  $$ |$$ |  $$ |   $$ |   $$ /  $$ |        $$ /  \__|$$ /  \__|$$ |  $$ |$$ |
+$$$$$$$$ |$$ |  $$ |   $$ |   $$ |  $$ |$$$$$$\ $$ |$$$$\ $$ |$$$$\ $$ |  $$ |$$$$$\
+$$  __$$ |$$ |  $$ |   $$ |   $$ |  $$ |\______|$$ |\_$$ |$$ |\_$$ |$$ |  $$ |$$  __|
+$$ |  $$ |$$ |  $$ |   $$ |   $$ |  $$ |        $$ |  $$ |$$ |  $$ |$$ |  $$ |$$ |
+$$ |  $$ |\$$$$$$  |   $$ |    $$$$$$  |        \$$$$$$  |\$$$$$$  |\$$$$$$  |$$ |
+\__|  \__| \______/    \__|    \______/          \______/  \______/  \______/ \__|
 EOF
 
 # Default values
@@ -113,22 +113,14 @@ fi
 
 
 
-# Download model 
+# Download model
 #todo : shall we put condition to check if model has been already downloaded? similar to autogguf?
 echo "Downloading the model..."
 huggingface-cli download "$MODEL_ID" --local-dir "./${MODEL_NAME}" --local-dir-use-symlinks False --revision main
 
-
-# Convert to fp16
-FP16="${MODEL_NAME}/${MODEL_NAME,,}.fp16.bin"
-echo "Converting the model to fp16..."
-python3 llama.cpp/convert.py "$MODEL_NAME" --outtype f16 --outfile "$FP16"
-
-# Quantize the model
-echo "Quantizing the model..."
 for METHOD in "${QUANTIZATION_METHOD_ARRAY[@]}"; do
     QTYPE="${MODEL_NAME}/${MODEL_NAME,,}.${METHOD^^}.gguf"
-    ./llama.cpp/quantize "$FP16" "$QTYPE" "$METHOD"
+    python llama.cpp/convert_hf_to_gguf.py --verbose "./${MODEL_NAME}" --outfile "$QTYPE" --outtype "$METHOD"
 done
 
 
@@ -143,7 +135,7 @@ if [[ -n "$USERNAME" && -n "$TOKEN" ]]; then
     # Uploading .gguf, .md files, and config.json
     echo "Uploading .gguf, .md files, and config.json..."
 
-    
+
     # Define a temporary directory
     TEMP_DIR="./temp_upload_dir"
 
