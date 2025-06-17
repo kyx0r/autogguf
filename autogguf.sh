@@ -91,16 +91,21 @@ MODEL_NAME=$(echo "$MODEL_ID" | awk -F'/' '{print $NF}')
 if [ ! -d "llama.cpp" ]; then
     echo "llama.cpp not found. Cloning and setting up..."
     git clone https://github.com/ggerganov/llama.cpp
+    cp llama.patch ./llama.cpp
     cd llama.cpp && git pull
+    git checkout tags/b5471
+    patch -p1 < llama.patch
     # Install required packages
     pip3 install -r requirements.txt
     # Build llama.cpp as it's freshly cloned
     if ! command -v nvcc &> /dev/null
     then
         echo "nvcc could not be found, building llama without LLAMA_CUBLAS"
-        make clean && make
+        cmake -B build
+        cmake --build build --config Release
     else
-        make clean && LLAMA_CUBLAS=1 make
+        cmake -B build -DLLAMA_CUBLAS=ON
+        cmake --build build --config Release
     fi
     cd ..
 else
@@ -115,8 +120,10 @@ fi
 
 # Download model
 #todo : shall we put condition to check if model has been already downloaded? similar to autogguf?
-echo "Downloading the model..."
-huggingface-cli download "$MODEL_ID" --local-dir "./${MODEL_NAME}" --local-dir-use-symlinks False --revision main
+if [ ! -e ./${MODEL_NAME} ]; then
+	echo "Downloading the model..."
+	huggingface-cli download "$MODEL_ID" --local-dir "./${MODEL_NAME}" --local-dir-use-symlinks False --revision main
+fi
 
 for METHOD in "${QUANTIZATION_METHOD_ARRAY[@]}"; do
     QTYPE="${MODEL_NAME}/${MODEL_NAME,,}.${METHOD^^}.gguf"

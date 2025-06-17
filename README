@@ -8,9 +8,12 @@ python -m venv .env
 # Activate it
 source .env/bin/activate
 # Install huggingface-cli
-...
+pip install -U "huggingface_hub[cli]"
 # Install transformers + numpy
-...
+pip install transformers
+# Install sentencepiece pytorch if not automatic
+pip3 install torch  --index-url https://download.pytorch.org/whl/cpu
+pip install sentencepiece
 
 # Convert your Hugging Face model to GGUF format for local deployment
 # Usage:
