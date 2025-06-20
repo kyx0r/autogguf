@@ -55,3 +55,29 @@ index cfd645a3..b9ce9012 100644
      const vec2 dm = get_dm(ib, 0);
      v = v * dm.x + dm.y;
  
+diff --git a/tools/main/main.cpp b/tools/main/main.cpp
+index 1bd2be2d..0a7828e1 100644
+--- a/tools/main/main.cpp
++++ b/tools/main/main.cpp
+@@ -74,7 +74,8 @@ static void sigint_handler(int signo) {
+             common_perf_print(*g_ctx, *g_smpl);
+ 
+             // make sure all logs are flushed
+-            LOG("Interrupted by user\n");
++            //LOG("Interrupted by user\n");
++            LOG("\n");
+             common_log_pause(common_log_main());
+ 
+             _exit(130);
+@@ -862,11 +863,6 @@ int main(int argc, char ** argv) {
+                 console::set_display(console::reset);
+                 display = true;
+ 
+-                if (buffer.empty()) { // Ctrl+D on empty line exits
+-                    LOG("EOF by user\n");
+-                    break;
+-                }
+-
+                 if (buffer.back() == '\n') {
+                     // Implement #587:
+                     // If the user wants the text to end in a newline,
